@@ -1,11 +1,35 @@
-# macOS files
+# === 1. RÁC CỦA RUST (QUAN TRỌNG NHẤT) ===
+# Thư mục chứa file thực thi và file tạm khi build Rust (cực nặng)
+/target/
+
+# Các file khóa của Cargo (tùy chọn, nhưng thường giữ lại Cargo.lock cho dự án cuối)
+# Cargo.lock
+
+# === 2. RÁC CỦA MÁY MAC (MACOS) ===
 .DS_Store
 .AppleDouble
 .LSOverride
-Icon?
-._*
 
-# Files tạm của trình soạn thảo
+# Files hệ thống khác của Apple
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# === 3. RÁC KHI LÀM VIỆC (EDITOR/IDE) ===
+# Nếu bạn dùng VS Code hoặc Cursor
 .vscode/
+*.code-workspace
+
+# Nếu bạn dùng các trình soạn thảo khác
 .idea/
 *.swp
+*.bak
+*.tmp
+
+# === 4. CÁC FILE LOG VÀ TẠM THỜI ===
+node_modules/
+*.log
+.env
