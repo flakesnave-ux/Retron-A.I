@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReTron A.I - Trợ lý Thế hệ Mới (Changg)</title>
+    
+    <style>
+        /* Reset cơ bản */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Định nghĩa màu sắc (Dark Mode) */
+        :root {
+            --bg-color: #121212; /* Nền tối sâu */
+            --container-bg: #1e1e1e; /* Nền vùng chat */
+            --header-bg: #2d2d2d; /* Nền header */
+            --text-color: #e0e0e0; /* Màu chữ chính */
+            --ai-msg-bg: #333333; /* Nền tin nhắn AI */
+            --user-msg-bg: #007bff; /* Nền tin nhắn Người dùng (Xanh) */
+            --input-bg: #2a2a2a; /* Nền ô nhập liệu */
+            --border-color: #444444; /* Màu viền */
+            --status-online: #00ff00; /* Màu chấm online */
+            --progress-bar: #007bff; /* Màu thanh tải */
+        }
+
+        /* Style cho Body */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Ngăn scroll toàn trang */
+        }
+
+        /* Layout Container chính */
+        .chat-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Style Header */
+        .chat-header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--border-color); /* Mặc định là xám */
+            border-radius: 50%;
+        }
+
+        .status-dot.online {
+            background-color: var(--status-online); /* Chuyển xanh khi sẵn sàng */
+        }
+
+        /* Thanh tiến trình tải bộ não */
+        #loading-container {
+            display: none; /* Ẩn khi không tải */
+            width: 100%;
+            height: 5px;
+            background-color: var(--ai-msg-bg);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--progress-bar);
+            transition: width 0.3s;
+        }
+
+        /* Style Cửa sổ chat (Vùng chứa tin nhắn) */
+        .chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Tùy chỉnh Scrollbar */
+        .chat-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Style Tin nhắn (Chung) */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            max-width: 80%;
+        }
+
+        .message .text {
+            padding: 12px 18px;
+            border-radius: 10px;
+            line-height: 1.6;
+            font-size: 1rem;
+            white-space: pre-wrap; /* Giữ định dạng xuống dòng */
+        }
+
+        /* Style Tin nhắn AI */
+        .ai-message {
+            align-self: flex-start;
+            gap: 10px;
+        }
+
+        .ai-message .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--header-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: var(--progress-bar);
+            border: 1px solid var(--progress-bar);
+            margin-top: 5px;
+        }
+
+        .ai-message .text {
+            background-color: var(--ai-msg-bg);
+            border-top-left-radius: 0;
+        }
+
+        /* Style Tin nhắn Người dùng */
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .user-message .text {
+            background-color: var(--user-msg-bg);
+            color: white;
+            border-top-right-radius: 0;
+        }
+
+        /* Style Thanh nhập liệu */
+        .chat-input-bar {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+            height: 50px;
+            max-height: 150px;
+        }
+
+        #user-input:focus {
+            border-color: var(--user-msg-bg);
+        }
+
+        #user-input:disabled {
+            opacity: 0.5;
+            cursor: not_allowed;
+        }
+
+        #send-btn {
+            background-color: var(--user-msg-bg);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            height: 50px;
+        }
+
+        #send-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #send-btn:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        
+        <header class="chat-header">
+            <div class="header-main">
+                <span class="status-dot" id="status-dot"></span>
+                <h1>ReTron A.I</h1>
+                <p id="status-text">(Tương lai của Changg)</p>
+            </div>
+            
+            <div id="loading-container">
+                <div id="loading-bar"></div>
+            </div>
+        </header>
+
+        <main class="chat-window" id="chat-window">
+            <div class="message ai-message">
+                <div class="avatar">T</div>
+                <div class="text">Xin chào Changg! Tôi là Tron-Fast-2026. Đang kiểm tra hệ thống WebGPU...</div>
+            </div>
+        </main>
+
+        <footer class="chat-input-bar">
+            <textarea id="user-input" placeholder="Đang khởi động não bộ... Vui lòng đợi" rows="1" disabled></textarea>
+            <button id="send-btn" disabled>Gửi</button>
+        </footer>
+    </div>
+
+    <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+        // Lấy các thành phần giao diện
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingBar = document.getElementById('loading-bar');
+
+        // Cấu hình bộ não "Tron-Fast-2026"
+        // Dựa trên mô hình Llama-3-8B-Instruct cực mạnh nhưng được nén để chạy nhanh
+        const selectedModel = "Llama-3-8B-Instruct-v0.1-q4f32_1-MLC";
+        
+        let engine; // Thần kinh điều khiển AI
+
+        // --- CÁC HÀM XỬ LÝ GIAO DIỆN ---
+
+        // Hàm thêm tin nhắn mới lên màn hình
+        function appendMessage(role, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = role === 'AI' ? 'message ai-message' : 'message user-message';
+            
+            if (role === 'AI') {
+                msgDiv.innerHTML = `<div class="avatar">T</div><div class="text">${text}</div>`;
+            } else {
+                msgDiv.innerHTML = `<div class="text">${text}</div>`;
+            }
+            
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Tự động cuộn xuống cuối
+        }
+
+        // --- CÁC HÀM XỬ LÝ AI (BỘ NÃO) ---
+
+        // Hàm khởi tạo bộ não Tron-Fast-2026
+        async function khoi_tao_retron() {
+            appendMessage('AI', 'Đang kết nối WebGPU và tải bộ não Tron-Fast-2026... (Quá trình này chỉ diễn ra 1 lần, Changg vui lòng đợi nhé!)');
+            
+            // Hiển thị thanh tiến trình
+            loadingContainer.style.display = 'block';
+
+            try {
+                // Tạo engine chạy AI ngay trên GPU máy của bạn
+                engine = await webllm.CreateMLCEngine(selectedModel, {
+                    initProgressCallback: (report) => {
+                        // Cập nhật thanh tiến trình dựa trên thông tin tải về
+                        console.log(report.text);
+                        // Phân tích văn bản để lấy % tiến độ (ví dụ: report.text có dạng "Loading... [45%]")
+                        const match = report.text.match(/\[(\d+)%\]/);
+                        if (match) {
+                            const progress = match[1];
+                            loadingBar.style.width = `${progress}%`;
+                        }
+                    }
+                });
+
+                // --- SẴN SÀNG! ---
+                appendMessage('AI', 'Tron-Fast-2026 đã sẵn sàng ngay trong trình duyệt của bạn! Hãy hỏi tôi bất cứ điều gì về lập trình, toán học hay cuộc sống.');
+                
+                // Cập nhật trạng thái
+                statusDot.classList.add('online');
+                statusText.innerText = 'Đã sẵn sàng';
+                statusText.style.color = '#00ff00';
+                loadingContainer.style.display = 'none'; // Ẩn thanh tải
+
+                // Mở khóa ô nhập liệu và nút gửi
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.placeholder = "Nhập câu hỏi của bạn cho Tron...";
+                userInput.focus();
+
+            } catch (error) {
+                // Xử lý lỗi (ví dụ: trình duyệt không hỗ trợ WebGPU)
+                appendMessage('AI', 'Ôi không! Trình duyệt của bạn không hỗ trợ WebGPU hoặc card đồ họa quá yếu. Tron không thể khởi động được. Hãy thử Chrome/Edge bản mới nhất nhé!');
+                statusText.innerText = 'Lỗi WebGPU';
+                statusText.style.color = 'red';
+                console.error(error);
+            }
+        }
+
+        // --- HÀM XỬ LÝ SỰ KIỆN GỬI TIN NHẮN ---
+
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return; // Không gửi nếu ô trống
+
+            // 1. Hiển thị tin nhắn của người dùng
+            appendMessage('User', text);
+            userInput.value = ''; // Xóa ô nhập liệu
+            userInput.style.height = '50px'; // Reset chiều cao ô nhập
+
+            // 2. Vô hiệu hóa nút gửi khi AI đang suy nghĩ
+            sendBtn.disabled = true;
+            sendBtn.innerText = 'Đang nghĩ...';
+
+            // 3. AI bắt đầu suy nghĩ
+            // Tạo prompt (câu lệnh) theo chuẩn Instruct để Tron hiểu
+            const messages = [
+                { role: "system", content: "Bạn là Tron-Fast-2026, một AI mạnh mẽ được tạo bởi Changg. Bạn trả lời bằng tiếng Việt, thông minh, ngắn gọn và thân thiện." },
+                { role: "user", content: text }
+            ];
+
+            // AI tính toán và tạo ra câu trả lời
+            // Sử dụng các tham số để tối ưu độ chính xác và tốc độ
+            const reply = await engine.chat.completions.create({
+                messages,
+                temperature: 0.7, // Độ sáng tạo (0.2-1.0)
+                max_gen_len: 1024 // Chiều dài tối đa của câu trả lời
+            });
+
+            const tron_reply_text = reply.choices[0].message.content;
+
+            // 4. Hiển thị câu trả lời của AI
+            appendMessage('AI', tron_reply_text);
+
+            // 5. Kích hoạt lại nút gửi
+            sendBtn.disabled = false;
+            sendBtn.innerText = 'Gửi';
+        }
+
+        // --- GẮN SỰ KIỆN ---
+
+        sendBtn.onclick = handleSend;
+
+        // Xử lý khi nhấn Enter (nhấn Shift + Enter để xuống dòng)
+        userInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        }
+
+        // Tự động thay đổi chiều cao ô nhập liệu khi gõ nhiều dòng
+        userInput.oninput = function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        };
+
+        // BẮT ĐẦU CHẠY: Khởi tạo bộ não khi vừa mở trang
+        khoi_tao_retron();
+
+    </script>
+</body>
+</html>
