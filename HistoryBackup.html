@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron-Fast-2026 | Nhật ký sao lưu</title>
+    <style>
+        /* GIAO DIỆN TRANG NHÃ CHUẨN MAC */
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: -apple-system, sans-serif;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        h1 {
+            color: #007aff;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .backup-card {
+            background: #1c1c1e;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .message-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2c2c2e;
+        }
+
+        .role {
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .role.user { color: #007aff; }
+        .role.ai { color: #34c759; }
+
+        .content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-download { background: #007aff; color: white; }
+        .btn-copy { background: #333; color: white; }
+        .btn-refresh { background: #34c759; color: white; }
+
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Nhật ký ReTron A.I</h1>
+        <p class="subtitle">Trình xem và sao lưu lịch sử trò chuyện của Changg</p>
+
+        <div id="history-list" class="backup-card">
+            </div>
+
+        <div class="actions">
+            <button class="btn-refresh" onclick="loadHistory()">Làm mới</button>
+            <button class="btn-copy" onclick="copyAll()">Sao chép tất cả</button>
+            <button class="btn-download" onclick="downloadBackup()">Tải về máy (.txt)</button>
+        </div>
+    </div>
+
+    <script>
+        function loadHistory() {
+            const list = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('tron_chat') || "[]");
+
+            if (history.length === 0) {
+                list.innerHTML = '<div class="empty-state">Chưa có dữ liệu trò chuyện nào được lưu.</div>';
+                return;
+            }
+
+            list.innerHTML = history.map(m => `
+                <div class="message-item">
+                    <div class="role ${m.role}">${m.role === 'ai' ? 'TRON-FAST-2026' : 'CHANGG'}</div>
+                    <div class="content">${m.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function copyAll() {
+            const history = JSON.parse(localStorage.getItem('tron_chat') || "[]");
+            const text = history.map(m => `${m.role.toUpperCase()}: ${m.text}`).join('\n\n');
+            navigator.clipboard.writeText(text);
+            alert("Đã sao chép toàn bộ cuộc trò chuyện!");
+        }
+
+        function downloadBackup() {
+            const history = JSON.parse(localStorage.getItem('tron_chat') || "[]");
+            const text = history.map(m => `${m.role.toUpperCase()}: ${m.text}`).join('\n\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const anchor = document.createElement('a');
+            anchor.download = 'tron_backup_changg.txt';
+            anchor.href = (window.URL || window.webkitURL).createObjectURL(blob);
+            anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+            anchor.click();
+        }
+
+        // Tự động tải khi mở trang
+        loadHistory();
+    </script>
+</body>
+</html>
